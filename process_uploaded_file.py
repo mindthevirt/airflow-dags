@@ -45,7 +45,7 @@ with DAG(
     def fetch_transcription_op(**kwargs):
         job_id = kwargs["params"]["job_id"]
         logging.info(f"Fetching transcription for job: {job_id}")
-        
+
         whisper_result_url = Variable.get("WHISPER_RESULT_URL", default_var="http://localhost:6000/result")
         url = f"{whisper_result_url}/{job_id}"
 
@@ -59,7 +59,6 @@ with DAG(
         if not transcription:
             raise Exception("No transcription found in response")
 
-        # Save to DB
         conn = sqlite3.connect(db_path)
         conn.execute(
             'UPDATE jobs SET transcription = ?, status = ? WHERE id = ?',
@@ -77,8 +76,7 @@ with DAG(
 
     t_validate = PythonOperator(
         task_id='validate_file',
-        python_callable=validate_op,
-        provide_context=True
+        python_callable=validate_op
     )
 
     t_transcribe = KubernetesPodOperator(
@@ -101,7 +99,7 @@ with DAG(
             spec=k8s.V1PodSpec(
                 containers=[
                     k8s.V1Container(
-                        name="base",  # must match the container in your image
+                        name="base",  # this must match your container name
                         resources=k8s.V1ResourceRequirements(
                             requests={"cpu": "500m", "memory": "1Gi"},
                             limits={"cpu": "1", "memory": "2Gi"}
@@ -112,18 +110,14 @@ with DAG(
         )
     )
 
-
-
     t_fetch_transcription = PythonOperator(
         task_id='fetch_transcription',
-        python_callable=fetch_transcription_op,
-        provide_context=True
+        python_callable=fetch_transcription_op
     )
 
     t_summarize = PythonOperator(
         task_id='summarize_text',
-        python_callable=summarize_op,
-        provide_context=True
+        python_callable=summarize_op
     )
 
     # DAG flow
