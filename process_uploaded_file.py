@@ -7,6 +7,7 @@ from airflow.operators.python import PythonOperator
 from airflow.models.param import Param
 from datetime import datetime
 from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import KubernetesPodOperator
+from kubernetes.client import models as k8s
 from airflow.models import Variable
 import requests
 import sqlite3
@@ -98,13 +99,12 @@ with DAG(
         env_vars={
             "PYTHONUNBUFFERED": "1"
         },
-        resources={
-            "request_cpu": "500m",
-            "request_memory": "1Gi",
-            "limit_cpu": "1",
-            "limit_memory": "2Gi"
-        }
+        resources=k8s.V1ResourceRequirements(
+            requests={"cpu": "500m", "memory": "1Gi"},
+            limits={"cpu": "2", "memory": "6Gi"}
+        )
     )
+
 
     t_fetch_transcription = PythonOperator(
         task_id='fetch_transcription',
