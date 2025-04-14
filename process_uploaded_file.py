@@ -96,14 +96,22 @@ with DAG(
         get_logs=True,
         is_delete_operator_pod=True,
         in_cluster=True,
-        env_vars={
-            "PYTHONUNBUFFERED": "1"
-        },
-        resources=k8s.V1ResourceRequirements(
-            requests={"cpu": "500m", "memory": "1Gi"},
-            limits={"cpu": "2", "memory": "6Gi"}
+        env_vars={"PYTHONUNBUFFERED": "1"},
+        pod_override=k8s.V1Pod(
+            spec=k8s.V1PodSpec(
+                containers=[
+                    k8s.V1Container(
+                        name="base",  # must match the container in your image
+                        resources=k8s.V1ResourceRequirements(
+                            requests={"cpu": "500m", "memory": "1Gi"},
+                            limits={"cpu": "1", "memory": "2Gi"}
+                        )
+                    )
+                ]
+            )
         )
     )
+
 
 
     t_fetch_transcription = PythonOperator(
