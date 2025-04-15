@@ -1,6 +1,8 @@
 import boto3
 import os
 import sqlite3
+from botocore import UNSIGNED
+from botocore.client import Config
 from pathlib import Path
 from airflow.models import Variable
 
@@ -14,11 +16,10 @@ session = boto3.session.Session()
 s3 = session.client(
     service_name='s3',
     endpoint_url=S3_ENDPOINT,
-    verify=False
+    verify=False, config=Config(signature_version=UNSIGNED)
 )
 
 def ensure_db_exists():
-    """If the DB file doesn't exist in S3, create and upload an empty schema."""
     local = Path(LOCAL_DB_PATH)
 
     try:
@@ -29,7 +30,6 @@ def ensure_db_exists():
         upload_db_to_s3()
 
 def create_local_db_schema(path: Path):
-    """Define your DB schema here if new."""
     conn = sqlite3.connect(path)
     conn.execute('''
         CREATE TABLE IF NOT EXISTS jobs (
