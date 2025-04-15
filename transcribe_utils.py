@@ -14,11 +14,12 @@ AWS_SECRET_ACCESS_KEY = Variable.get("AWS_SECRET_ACCESS_KEY")
 AWS_REGION = Variable.get("AWS_REGION")
 
 # Initialize S3 resource
-s3 = boto3.resource('s3', 
-                    AWS_ACCESS_KEY_ID,
-                    AWS_SECRET_ACCESS_KEY,
-                    AWS_REGION,
-                    verify=False)
+s3 = boto3.resource(
+    's3',
+    aws_access_key_id=AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+    region_name=AWS_REGION
+    )
 
 def download_from_s3(s3_url):
     """Download a file from S3 to a temporary location"""

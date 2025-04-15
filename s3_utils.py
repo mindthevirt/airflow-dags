@@ -14,13 +14,18 @@ AWS_ACCESS_KEY_ID = Variable.get("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = Variable.get("AWS_SECRET_ACCESS_KEY")
 AWS_REGION = Variable.get("AWS_REGION")
 
-# Use boto3 resource instead of client
-s3 = boto3.resource('s3', AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, verify=False)
+# Use boto3 resource with named parameters
+s3 = boto3.resource(
+    's3',
+    aws_access_key_id=AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+    region_name=AWS_REGION
+    )
 
 def ensure_db_exists():
     local = Path(LOCAL_DB_PATH)
 
-    try: 
+    try:
         # Check if the file exists in S3
         s3.Object(BUCKET_NAME, DB_KEY).load()
     except s3.meta.client.exceptions.ClientError:
