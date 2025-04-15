@@ -17,7 +17,7 @@ AWS_REGION = Variable.get("AWS_REGION")
 s3 = boto3.resource('s3', 
                     AWS_ACCESS_KEY_ID,
                     AWS_SECRET_ACCESS_KEY,
-                    region_name=AWS_REGION,
+                    AWS_REGION,
                     verify=False)
 
 def download_from_s3(s3_url):

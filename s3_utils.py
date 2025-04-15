@@ -15,7 +15,7 @@ AWS_SECRET_ACCESS_KEY = Variable.get("AWS_SECRET_ACCESS_KEY")
 AWS_REGION = Variable.get("AWS_REGION")
 
 # Use boto3 resource instead of client
-s3 = boto3.resource('s3', AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, region_name=AWS_REGION, verify=False)
+s3 = boto3.resource('s3', AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, verify=False)
 
 def ensure_db_exists():
     local = Path(LOCAL_DB_PATH)
