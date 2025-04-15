@@ -23,8 +23,8 @@ S3_ENDPOINT = Variable.get("S3_ENDPOINT")
 BUCKET_NAME = Variable.get("BUCKET_NAME")
 DB_KEY = Variable.get("DB_KEY")
 LOCAL_DB_PATH = "/tmp/database.db"
-AUTH_TOKEN = token
-AWS_ACCESS_KEY_ID = token
+AUTH_TOKEN = Variable.get("AUTH_TOKEN")
+AWS_ACCESS_KEY_ID = Variable.get("AUTH_TOKEN")
 
 # Use boto3 resource instead of client
 s3 = boto3.resource('s3', 
