@@ -107,8 +107,6 @@ with DAG(
         in_cluster=True,
         env_vars={
             "PYTHONUNBUFFERED": "1",
-            "S3_ENDPOINT": "{{ var.value.S3_ENDPOINT }}",
-            "BUCKET_NAME": "{{ var.value.BUCKET_NAME }}"
         }
     )
 
