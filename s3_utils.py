@@ -7,18 +7,6 @@ from pathlib import Path
 from airflow.models import Variable
 
 
-def get_token():
-    TOKEN_PATH = '/etc/secrets/ezua/.auth_token'
-    with open(TOKEN_PATH, 'r') as f:
-        auth_token = f.read()
-
-    os.environ['AUTH_TOKEN'] = auth_token
-    print(os.environ['AUTH_TOKEN'])
-    return auth_token
-
-
-token = get_token()
-
 S3_ENDPOINT = Variable.get("S3_ENDPOINT")
 BUCKET_NAME = Variable.get("BUCKET_NAME")
 DB_KEY = Variable.get("DB_KEY")
