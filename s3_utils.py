@@ -7,7 +7,6 @@ from pathlib import Path
 from airflow.models import Variable
 
 
-S3_ENDPOINT = Variable.get("S3_ENDPOINT")
 BUCKET_NAME = Variable.get("BUCKET_NAME")
 DB_KEY = Variable.get("DB_KEY")
 LOCAL_DB_PATH = "/tmp/database.db"

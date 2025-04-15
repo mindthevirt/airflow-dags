@@ -11,11 +11,13 @@ WHISPER_API_URL = Variable.get("WHISPER_API_URL")
 BUCKET_NAME = Variable.get("BUCKET_NAME")
 AWS_ACCESS_KEY_ID = Variable.get("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = Variable.get("AWS_SECRET_ACCESS_KEY")
+AWS_REGION = Variable.get("AWS_REGION")
 
 # Initialize S3 resource
 s3 = boto3.resource('s3', 
                     AWS_ACCESS_KEY_ID,
                     AWS_SECRET_ACCESS_KEY,
+                    region_name=AWS_REGION,
                     verify=False)
 
 def download_from_s3(s3_url):
