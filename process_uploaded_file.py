@@ -93,7 +93,7 @@ with DAG(
     t_transcribe = KubernetesPodOperator(
         task_id="transcribe_file",
         name="whisper-transcribe",
-        namespace="default",
+        namespace="admin-61e1ecc4",
         image="ghcr.io/mindthevirt/whisper-service:latest",
         cmds=["curl"],
         arguments=[
