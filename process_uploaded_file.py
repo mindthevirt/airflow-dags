@@ -107,6 +107,9 @@ with DAG(
         in_cluster=True,
         env_vars={
             "PYTHONUNBUFFERED": "1",
+            "AWS_ACCESS_KEY_ID": "{{ var.value.AWS_ACCESS_KEY_ID }}",
+            "AWS_SECRET_ACCESS_KEY": "{{ var.value.AWS_SECRET_ACCESS_KEY }}",
+            "AWS_REGION": "{{ var.value.AWS_REGION }}"
         }
     )
 
