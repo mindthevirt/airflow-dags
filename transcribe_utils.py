@@ -8,21 +8,22 @@ from botocore import UNSIGNED
 from botocore.client import Config
 
 WHISPER_API_URL = Variable.get("WHISPER_API_URL")
-S3_ENDPOINT = Variable.get("S3_ENDPOINT")
 BUCKET_NAME = Variable.get("BUCKET_NAME")
+AWS_ACCESS_KEY_ID = Variable.get("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = Variable.get("AWS_SECRET_ACCESS_KEY")
 
 # Initialize S3 resource
 s3 = boto3.resource('s3', 
-                    endpoint_url=S3_ENDPOINT, 
-                    verify=False, 
-                    config=Config(signature_version=UNSIGNED))
+                    AWS_ACCESS_KEY_ID,
+                    AWS_SECRET_ACCESS_KEY,
+                    verify=False)
 
 def download_from_s3(s3_url):
     """Download a file from S3 to a temporary location"""
     if not s3_url.startswith('s3://'):
         return s3_url  # Return as is if not an S3 URL
     
-    
+
     parts = s3_url.replace('s3://', '').split('/', 1)
     bucket = parts[0]
     key = parts[1]
