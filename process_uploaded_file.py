@@ -32,7 +32,7 @@ with DAG(
     tags=['audio', 'processing'],
     params={
         "job_id": Param("", type="string", description="Job ID from the database"),
-        "s3_url": Param("s3://some-bucket/audio.wav", type="string", description="S3 URL to the audio file")
+        "s3_url": Param("s3://mlflow.iaie02/recording.mp4", type="string", description="S3 URL to the audio file")
     },
     access_control={
         'Admin': {'can_read', 'can_edit'}
@@ -53,7 +53,7 @@ with DAG(
         job_id = kwargs["params"]["job_id"]
         logging.info(f"Fetching transcription for job: {job_id}")
 
-        whisper_result_url = Variable.get("WHISPER_RESULT_URL", default_var="http://localhost:6000/result")
+        whisper_result_url = Variable.get("WHISPER_RESULT_URL")
         url = f"{whisper_result_url}/{job_id}"
 
         try:
@@ -108,7 +108,11 @@ with DAG(
         get_logs=True,
         is_delete_operator_pod=True,
         in_cluster=True,
-        env_vars={"PYTHONUNBUFFERED": "1"}
+        env_vars={
+            "PYTHONUNBUFFERED": "1",
+            "S3_ENDPOINT": "{{ var.value.S3_ENDPOINT }}",
+            "BUCKET_NAME": "{{ var.value.BUCKET_NAME }}"
+        }
     )
 
     t_fetch_transcription = PythonOperator(

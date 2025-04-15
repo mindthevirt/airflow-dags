@@ -12,19 +12,19 @@ BUCKET_NAME = Variable.get("BUCKET_NAME")
 DB_KEY = Variable.get("DB_KEY")
 LOCAL_DB_PATH = "/tmp/database.db"
 
-session = boto3.session.Session()
-s3 = session.client(
-    service_name='s3',
-    endpoint_url=S3_ENDPOINT,
-    verify=False, config=Config(signature_version=UNSIGNED)
-)
+# Use boto3 resource instead of client
+s3 = boto3.resource('s3', 
+                    endpoint_url=S3_ENDPOINT, 
+                    verify=False, 
+                    config=Config(signature_version=UNSIGNED))
 
 def ensure_db_exists():
     local = Path(LOCAL_DB_PATH)
 
     try:
-        s3.head_object(Bucket=BUCKET_NAME, Key=DB_KEY)
-    except s3.exceptions.ClientError:
+        # Check if the file exists in S3
+        s3.Object(BUCKET_NAME, DB_KEY).load()
+    except s3.meta.client.exceptions.ClientError:
         # File not found in S3, create and upload
         create_local_db_schema(local)
         upload_db_to_s3()
@@ -43,8 +43,16 @@ def create_local_db_schema(path: Path):
     conn.close()
 
 def download_db_from_s3():
-    s3.download_file(BUCKET_NAME, DB_KEY, LOCAL_DB_PATH)
+    try:
+        s3.Bucket(BUCKET_NAME).download_file(DB_KEY, LOCAL_DB_PATH)
+    except Exception as e:
+        print(f"Error downloading database: {e}")
+        # Create a new database if download fails
+        create_local_db_schema(Path(LOCAL_DB_PATH))
     return LOCAL_DB_PATH
 
 def upload_db_to_s3():
-    s3.upload_file(LOCAL_DB_PATH, BUCKET_NAME, DB_KEY)
+    try:
+        s3.Bucket(BUCKET_NAME).upload_file(LOCAL_DB_PATH, DB_KEY)
+    except Exception as e:
+        print(f"Error uploading database: {e}")

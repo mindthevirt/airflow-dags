@@ -21,6 +21,9 @@ def summarize_text(job_id, db_path):
         with sqlite3.connect(db_path) as conn:
             conn.row_factory = sqlite3.Row
             job = conn.execute('SELECT * FROM jobs WHERE id = ?', (job_id,)).fetchone()
+            
+            if not job:
+                raise Exception(f"Job {job_id} not found in database")
 
             transcription = dict(job).get("transcription")
             if not transcription:
@@ -29,6 +32,7 @@ def summarize_text(job_id, db_path):
             prompt = f"""You are a professional summarization agent. Please summarize the following transcription into clear, concise bullet points suitable for someone who wants to quickly understand what was said.\n\nTranscription:\n{transcription}"""
 
             try:
+                logging.info(f"Calling OpenAI API for job {job_id}")
                 response = client.chat.completions.create(
                     messages=[
                         {
@@ -40,7 +44,9 @@ def summarize_text(job_id, db_path):
                     max_tokens=1024,
                 )
                 summary = response.choices[0].message.content.strip()
+                logging.info(f"Successfully generated summary for job {job_id}")
             except Exception as e:
+                logging.error(f"OpenAI API call failed for job {job_id}: {e}")
                 raise Exception(f"Summarization failed: {e}")
 
             conn.execute(
@@ -52,6 +58,9 @@ def summarize_text(job_id, db_path):
             logging.info(f"Summary completed for job {job_id}")
             logging.debug(f"Summary content: {summary[:200]}...")
 
+    except sqlite3.Error as e:
+        logging.error(f"Database error for job {job_id}: {e}")
+        raise Exception(f"Database error: {e}")
     except Exception as e:
         logging.error(f"Failed to summarize job {job_id}: {e}")
         raise
