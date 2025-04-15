@@ -103,8 +103,9 @@ with DAG(
             "http://localhost:6000/transcribe"
         ],
         get_logs=True,
-        is_delete_operator_pod=True,
+        is_delete_operator_pod=False,
         in_cluster=True,
+        on_finish_action='delete_succeeded_pod',
         env_vars={
             "PYTHONUNBUFFERED": "1",
             "AWS_ACCESS_KEY_ID": "{{ var.value.AWS_ACCESS_KEY_ID }}",
