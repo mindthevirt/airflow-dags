@@ -15,14 +15,13 @@ import logging
 
 from validate_file import validate_file
 from summarize_text import summarize_text
+from s3_utils import download_db_from_s3, upload_db_to_s3, ensure_db_exists
 
 default_args = {
     'owner': 'airflow',
     'start_date': datetime(2024, 1, 1),
     'retries': 1
 }
-
-db_path = "/opt/airflow/database.db"
 
 with DAG(
     dag_id='process_uploaded_file',
@@ -34,13 +33,21 @@ with DAG(
     params={
         "job_id": Param("", type="string", description="Job ID from the database"),
         "s3_url": Param("s3://some-bucket/audio.wav", type="string", description="S3 URL to the audio file")
+    },
+    access_control={
+        'Admin': {'can_read', 'can_edit'}
     }
 ) as dag:
 
     def validate_op(**kwargs):
         job_id = kwargs["params"]["job_id"]
         logging.info(f"Validating job: {job_id}")
-        return validate_file(job_id, db_path)
+
+        ensure_db_exists()
+        db_path = download_db_from_s3()
+        result = validate_file(job_id, db_path)
+        upload_db_to_s3()
+        return result
 
     def fetch_transcription_op(**kwargs):
         job_id = kwargs["params"]["job_id"]
@@ -59,6 +66,8 @@ with DAG(
         if not transcription:
             raise Exception("No transcription found in response")
 
+        ensure_db_exists()
+        db_path = download_db_from_s3()
         conn = sqlite3.connect(db_path)
         conn.execute(
             'UPDATE jobs SET transcription = ?, status = ? WHERE id = ?',
@@ -66,13 +75,18 @@ with DAG(
         )
         conn.commit()
         conn.close()
-
+        upload_db_to_s3()
         logging.info(f"Transcription saved for job {job_id}")
 
     def summarize_op(**kwargs):
         job_id = kwargs["params"]["job_id"]
         logging.info(f"Summarizing job: {job_id}")
-        return summarize_text(job_id, db_path)
+
+        ensure_db_exists()
+        db_path = download_db_from_s3()
+        result = summarize_text(job_id, db_path)
+        upload_db_to_s3()
+        return result
 
     t_validate = PythonOperator(
         task_id='validate_file',
@@ -107,5 +121,4 @@ with DAG(
         python_callable=summarize_op
     )
 
-    # DAG flow
     t_validate >> t_transcribe >> t_fetch_transcription >> t_summarize

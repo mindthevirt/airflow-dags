@@ -1,29 +1,28 @@
-import os
 import sqlite3
 import logging
 
+
 def validate_file(job_id, db_path):
-    logging.info(f"Validating job: {job_id}")
+    logging.info(f"Opening DB at {db_path}")
+    inserted = False
 
-    conn = sqlite3.connect(db_path)
-    conn.row_factory = sqlite3.Row
+    try:
+        with sqlite3.connect(db_path) as conn:
+            cursor = conn.cursor()
 
-    job = conn.execute('SELECT * FROM jobs WHERE id = ?', (job_id,)).fetchone()
-    conn.close()
+            cursor.execute("SELECT id FROM jobs WHERE id = ?", (job_id,))
+            result = cursor.fetchone()
 
-    if not job:
-        raise Exception(f"Job {job_id} not found")
+            if result is None:
+                logging.info(f"Job {job_id} not found. Creating new entry.")
+                cursor.execute("INSERT INTO jobs (id, status) VALUES (?, ?)", (job_id, 'created'))
+                conn.commit()
+                inserted = True
+            else:
+                logging.info(f"Job {job_id} already exists.")
 
-    job_dict = dict(job)
-    file_path = job_dict.get("file_path")
+    except Exception as e:
+        logging.error(f"Failed to validate job: {e}")
+        raise
 
-    if not file_path:
-        raise Exception(f"No file path found for job {job_id}")
-
-    if not os.path.exists(file_path):
-        raise Exception(f"File does not exist: {file_path}")
-
-    if not file_path.lower().endswith(".wav"):
-        raise Exception(f"Unsupported file format: {file_path}. Only .wav files are supported.")
-
-    logging.info(f"Validation passed for file: {file_path}")
+    return {"job_id": job_id, "inserted": inserted}
