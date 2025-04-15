@@ -33,9 +33,6 @@ with DAG(
     params={
         "job_id": Param("", type="string", description="Job ID from the database"),
         "s3_url": Param("s3://mlflow.iaie02/recording.mp4", type="string", description="S3 URL to the audio file")
-    },
-    access_control={
-        'Admin': {'can_read', 'can_edit'}
     }
 ) as dag:
 
