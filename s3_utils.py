@@ -13,12 +13,10 @@ DB_KEY = Variable.get("DB_KEY")
 LOCAL_DB_PATH = "/tmp/database.db"
 AWS_ACCESS_KEY_ID = Variable.get("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = Variable.get("AWS_SECRET_ACCESS_KEY")
+AWS_REGION = Variable.get("AWS_REGION")
 
-# Initialize S3 resource with correct parameter format
-s3 = boto3.resource('s3', 
-                    endpoint_url=S3_ENDPOINT, 
-                    verify=False, 
-                    config=Config(signature_version=UNSIGNED))
+# Use boto3 resource instead of client
+s3 = boto3.resource('s3', AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, region_name=AWS_REGION, verify=False)
 
 def ensure_db_exists():
     local = Path(LOCAL_DB_PATH)
