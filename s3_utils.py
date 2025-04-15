@@ -7,21 +7,34 @@ from pathlib import Path
 from airflow.models import Variable
 
 
+def get_token():
+    TOKEN_PATH = '/etc/secrets/ezua/.auth_token'
+    with open(TOKEN_PATH, 'r') as f:
+        auth_token = f.read()
+
+    os.environ['AUTH_TOKEN'] = auth_token
+    print(os.environ['AUTH_TOKEN'])
+    return auth_token
+
+
+token = get_token()
+
 S3_ENDPOINT = Variable.get("S3_ENDPOINT")
 BUCKET_NAME = Variable.get("BUCKET_NAME")
 DB_KEY = Variable.get("DB_KEY")
 LOCAL_DB_PATH = "/tmp/database.db"
+AUTH_TOKEN = token
+AWS_ACCESS_KEY_ID = token
 
 # Use boto3 resource instead of client
 s3 = boto3.resource('s3', 
                     endpoint_url=S3_ENDPOINT, 
-                    verify=False, 
-                    config=Config(signature_version=UNSIGNED))
+                    verify=False)
 
 def ensure_db_exists():
     local = Path(LOCAL_DB_PATH)
 
-    try:
+    try: 
         # Check if the file exists in S3
         s3.Object(BUCKET_NAME, DB_KEY).load()
     except s3.meta.client.exceptions.ClientError:
